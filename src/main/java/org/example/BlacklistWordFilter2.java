@@ -2,17 +2,25 @@ package org.example;
 
 import org.apache.spark.sql.Dataset;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.Serializable;
+import java.sql.*;
 
-public class BlacklistWordFilter2 {
+public class BlacklistWordFilter2 implements Serializable {
     private transient Connection blacklistWordDatabase = connectToDatabase();
 
     public Dataset<String> filterWords(Dataset<String> original) {
-        // TODO remove all words we have in the blacklist stored in the DB
-        return original;
+        // remove all words we have in the blacklist stored in the DB
+        return original.filter((String s) -> {
+            String query = "select count(*) as count from blacklist where word = ?";
+            try(PreparedStatement ps = blacklistWordDatabase.prepareStatement(query)) {
+                ps.setString(1, s);
+                try(ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    int count = rs.getInt("count");
+                    return count != 0;
+                }
+            }
+        });
     }
 
     private Connection connectToDatabase() {

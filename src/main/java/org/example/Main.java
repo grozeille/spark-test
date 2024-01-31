@@ -35,10 +35,13 @@ public class Main {
             }
         }
 
-        // why do we have an exception ?
+        // why do we have a Task not serializable exception ?
         logData = new BlacklistWordFilter().filterWords(logData);
 
-        // what's the purpose of the coalesce ?
+        // why do we have a NullPointerException ?
+        logData = new BlacklistWordFilter2().filterWords(logData);
+
+        // what's the purpose of the coalesce method ?
         logData.filter((String s) -> s.contains("b"))
                .coalesce(1)
                .write().mode(OVERWRITE).parquet("target/lines_with_b");
